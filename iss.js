@@ -20,15 +20,21 @@ const fetchMyIP = function(callback) {
     }  else {
       const dataIP = JSON.parse(body).ip;
 
-      const fetchCoordsByIP = () => {
-        request(`https://ipvigilante.com/${dataIP}`,(error,response,body) => {
-          console.log('error:',error);
-          console.log('statusCode :', response&& response.statusCode);
-          const coordinate = JSON.parse(body)
-          console.log(coordinate);
+      const fetchCoordsByIP = (IpAddress) => {
+        request(`https://ipvigilante.com/${IpAddress}`,(error,response,body) => {
+          //console.log('error:',error);
+          //console.log('statusCode :', response&& response.statusCode);
+          if(response.statusCode !== 200){
+            callback(`statusCode is ${response.statusCode} error is ${error}`,null)
+          } else {
+            const coordinateOfIp = JSON.parse(body)
+            const latitude = (coordinateOfIp.data.latitude);
+            const longitude = (coordinateOfIp.data.longitude);
+            console.log(`latitude: ${latitude} & longitude : ${longitude} `)
+          }
         })
         };
-        fetchCoordsByIP();
+        fetchCoordsByIP(dataIP);
 
       callback(null,dataIP);
     }
