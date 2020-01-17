@@ -30,18 +30,36 @@ const fetchMyIP = function(callback) {
             const coordinateOfIp = JSON.parse(body)
             const latitude = (coordinateOfIp.data.latitude);
             const longitude = (coordinateOfIp.data.longitude);
+            const coordinateObj = { 'latitude' : latitude, 'longitude' : longitude}
             console.log(`latitude: ${latitude} & longitude : ${longitude} `)
+
+            const fetchISSFlyOverTimes = () => {
+              request(`http://api.open-notify.org/iss-now.json`,(error,response,body) => {
+                console.log('error',error);
+                console.log('New JSON OBJ',JSON.parse(body))
+              })
+            }
+            fetchISSFlyOverTimes();
+            
+
           }
-        })
+          
+        });
+        
         };
         fetchCoordsByIP(dataIP);
+        
+
+        
 
       callback(null,dataIP);
     }
+    
   });
   
 
 };
+
 
 
 module.exports = { fetchMyIP };
