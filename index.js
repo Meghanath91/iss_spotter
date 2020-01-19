@@ -1,12 +1,19 @@
 // index.js
-const { fetchMyIP } = require('./iss');
 
-fetchMyIP((errMsg, ip) => {
-  
-  if (errMsg) {
-    console.log("It didn't work!" , errMsg);
-    return;
+const { nextISSTimesForMyLocation } = require('./iss');
+
+const printPassTimes = ((passTimes) => {
+  // success, print out the deets!
+console.log("It worked here is the passTimes",passTimes);
+
+
+})
+
+nextISSTimesForMyLocation((error, passTimes) => {
+  if (error) {
+    return console.log("It didn't work!", error);
   }
-
-  console.log('It worked! Returned IP:' , ip);
+ printPassTimes(passTimes);
+  
 });
+

@@ -1,28 +1,26 @@
+// iss.js 
+
 /**
- * Makes a single API request to retrieve the user's IP address.
+ * Orchestrates multiple API requests in order to determine the next 5 upcoming ISS fly overs for the user's current location.
  * Input:
- *   - A callback (to pass back an error or the IP string)
+ *   - A callback with an error or results. 
  * Returns (via Callback):
  *   - An error, if any (nullable)
- *   - The IP address as a string (null if error). Example: "162.245.144.188"
- */
+ *   - The fly-over times as an array (null if error):
+ *     [ { risetime: <number>, duration: <number> }, ... ]
+ */ 
+const request = require('request');
+const nextISSTimesForMyLocation = function(callback) {
+
 const fetchMyIP = function(callback) {
   // use request to fetch IP address from JSON API
-
-  const request = require('request');
   request('https://api.ipify.org/?format=json', (error, response, body) => {
-  // console.log('error:', error); // Print the error if one occurred
-  // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-
     if (response.statusCode !== 200) {
       callback(`statusCode is ${response.statusCode} error is ${error}`,null);
     }  else {
       const dataIP = JSON.parse(body).ip;
-
       const fetchCoordsByIP = (IpAddress) => {
         request(`https://ipvigilante.com/${IpAddress}`,(error,response,body) => {
-          //console.log('error:',error);
-          //console.log('statusCode :', response&& response.statusCode);
           if(response.statusCode !== 200){
             callback(`statusCode is ${response.statusCode} error is ${error}`,null)
           } else {
@@ -30,27 +28,35 @@ const fetchMyIP = function(callback) {
             const latitude = (coordinateOfIp.data.latitude);
             const longitude = (coordinateOfIp.data.longitude);
             const coordinateObj = { 'latitude' : latitude, 'longitude' : longitude}
-            console.log(`latitude: ${latitude} & longitude : ${longitude} `)
-            if(response.statusCode !== 200 ){
+           // console.log(`latitude: ${latitude} & longitude : ${longitude} `)
+            if(response.statusCode !== 200 ) {
               callback(`statusCode is ${response.statusCode} error is ${error}`,null)
             } else {
               const fetchISSFlyOverTimes = (coordinates,callback) => {
+                if(response.statusCode !== 200) {
+                  callback(`statusCode is ${response.statusCode} error is ${error}`,null)
+                }
                 request(`http://api.open-notify.org/iss-pass.json?lat=${coordinates.latitude}&lon=${coordinates.longitude}`,(error,response,body) => {
-                  console.log('error',error);
+                  //console.log('error',error);
                   console.log('New JSON OBJ',JSON.parse(body))
+                  return(JSON.parse(body).response);
                 });
               };
               fetchISSFlyOverTimes(coordinateObj);
-
             }
-            
           }
         });
         };
-        fetchCoordsByIP(dataIP);
+        fetchCoordsByIP(dataIP);  
       callback(null,dataIP);
-    }
+    };
+    
   });
 };
+fetchMyIP(callback);
 
-module.exports = { fetchMyIP };
+  
+}
+
+
+module.exports = { nextISSTimesForMyLocation };
